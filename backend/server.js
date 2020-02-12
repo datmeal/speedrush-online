@@ -1,6 +1,10 @@
 const express = require('express');
 
 const app = express();
+
+const passport = require('passport');
+const auth = require('./auth');
+
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -10,9 +14,22 @@ const todoRoutes = express.Router();
 
 const Todo = require('./todo.model');
 
+auth(passport);
 
+app.use(passport.initialize());
 app.use(cors());
 app.use(bodyParser.json());
+
+app.get('/auth/google', passport.authenticate('google', {
+  scope: 'https://www.googleapis.com/auth/userinfo.profile'
+}));
+
+app.get('/auth/google/callback', () => {
+  passport.authenticate('google', {
+    successRedirect: '/profile',
+    failureRedirect: '/fail'
+  });
+});
 
 // mongoose.connect('mongodb://127.0.0.1:27017/todos', { useNewUrlParser: true });
 mongoose.connect(config.mongoUri, { useNewUrlParser: true });
